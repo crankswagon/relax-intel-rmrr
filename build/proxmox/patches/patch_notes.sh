@@ -14,3 +14,8 @@ diff -u ./Makefile.orig ./Makefile.alt > proxmox.patch
 patch iommu.c ./build/proxmox/patches/add-relaxable-rmrr-5_11.patch
 patch Makefile ./build/proxmox/patches/proxmox.patch
 
+
+
+## ok so commenting out the bit in find-firmware.pl is actually required
+
+wget https://raw.githubusercontent.com/proxmox/pve-kernel/pve-kernel-5.11/debian/scripts/find-firmware.pl
