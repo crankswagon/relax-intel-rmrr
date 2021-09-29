@@ -37,8 +37,8 @@ else
   echo "Step 1.0: Adding Proxmox apt repository..."
   apt -y update
   apt -y install gnupg
-  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 7BF2812E8A6E88E0
-  echo 'deb http://download.proxmox.com/debian/pve buster pve-no-subscription' > /etc/apt/sources.list.d/pve.list
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DD4BA3917E23BF59
+  echo 'deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription' > /etc/apt/sources.list.d/pve.list
 fi
 
 # Install all packages required to build the kernel & create *.deb packages for installation
@@ -47,7 +47,7 @@ apt -y update
 apt -y install git nano screen patch fakeroot build-essential devscripts libncurses5 libncurses5-dev libssl-dev bc \
  flex bison libelf-dev libaudit-dev libgtk2.0-dev libperl-dev asciidoc xmlto gnupg gnupg2 rsync lintian debhelper \
  libdw-dev libnuma-dev libslang2-dev sphinx-common asciidoc-base automake cpio dh-python file gcc kmod libiberty-dev \
- libpve-common-perl libtool perl-modules python-minimal sed tar zlib1g-dev lz4 curl
+ libpve-common-perl libtool perl-modules python2-minimal sed tar zlib1g-dev lz4 curl dwarves
 
 
 
@@ -60,27 +60,34 @@ mkdir proxmox-kernel
 cd proxmox-kernel
 
 # Clone official Proxmox kernel repo & Relaxed RMRR Mapping patch
+# changing to https cause there seems to be issues with git
 echo "Step 2.1: Downloading Proxmox kernel toolchain & patches"
-git clone --depth=1 -b pve-kernel-5.4 git://git.proxmox.com/git/pve-kernel.git
-git clone --depth=1 https://github.com/kiler129/relax-intel-rmrr.git
+git clone --depth=1 -b pve-kernel-5.11 https://git.proxmox.com/git/pve-kernel.git
+#git clone --depth=1 https://github.com/kiler129/relax-intel-rmrr.git
 
 # Go to the actual Proxmox toolchain
 cd pve-kernel
 
+
+### removing this bit since it appears that git.proxmox.com no longer allows snapshots
 # (OPTIONAL) Download flat copy of Ubuntu Focal kernel submodule
 #  If you skip this the "make" of Proxmox kernel toolchain will download a copy (a Proxmox kernel is based on Ubuntu
 #  Focal kernel). However, it will download it with the whole history etc which takes A LOT of space (and time). This
 #  bypasses the process safely.
 # This curl skips certificate validation because Proxmox GIT WebUI doesn't send Let's Encrypt intermediate cert
-echo "Step 2.2: Downloading base kernel"
-curl -f -k "https://git.proxmox.com/?p=mirror_ubuntu-focal-kernel.git;a=snapshot;h=$(git submodule status submodules/ubuntu-focal | cut -c 2-41);sf=tgz" --output kernel.tgz || true
 
-if [[ -f "kernel.tgz" ]]; then
-  tar -xf kernel.tgz -C submodules/ubuntu-focal/ --strip 1
-  rm kernel.tgz
-else
-  echo "[-] Failed to download flat base kernel (will use git instead)"
-fi
+echo "Step 2.2: Downloading base kernel"
+
+git submodule update --init submodules/ubuntu-hirsute
+
+# curl -f -k "https://git.proxmox.com/?p=mirror_ubuntu-hirsute-kernel.git;a=snapshot;h=$(git submodule status submodules/ubuntu-hirsute | cut -c 2-41);sf=tgz" --output kernel.tgz || true
+
+# if [[ -f "kernel.tgz" ]]; then
+#   tar -xf kernel.tgz -C submodules/ubuntu-hirsute/ --strip 1
+#   rm kernel.tgz
+# else
+#   echo "[-] Failed to download flat base kernel (will use git instead)"
+# fi
 
 
 
@@ -88,8 +95,8 @@ echo '###########################################################'
 echo '################# STEP 3 - CREATE KERNEL ##################'
 echo '###########################################################'
 echo "Step 3.0: Applying patches"
-cp ../relax-intel-rmrr/patches/add-relaxable-rmrr-below-5_8.patch ./patches/kernel/CUSTOM-add-relaxable-rmrr.patch
-patch -p1 < ../relax-intel-rmrr/patches/proxmox.patch
+cp ../../patches/add-relaxable-rmrr-5_11.patch ./patches/kernel/CUSTOM-add-relaxable-rmrr.patch
+patch -p1 < ../../patches/proxmox.patch
 
 
 echo "Step 3.1: Compiling kernel... (it will take 30m-3h)"
@@ -119,6 +126,6 @@ cd ..
 mkdir debs
 mv pve-kernel/*.deb ./debs
 rm -rf pve-kernel
-rm -rf relax-intel-rmrr
+#rm -rf relax-intel-rmrr
 
 exit 0

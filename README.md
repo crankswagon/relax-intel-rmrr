@@ -95,8 +95,12 @@ In most distros (including Proxmox) you do this by:
         ```
         GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on,relax_rmrr iommu=pt intremap=no_x2apic_optout"
         ```
+
     - *Side note: these are actually options which will make your PCI passthrough work and do so efficiently*
-3. Running `update-grub`
+    - you may also want to set `GRUB_DEFAULT=1` to boot the relax_rmrr option by default or modify your /boot partition accordingly
+
+3. Running `update-grub`  
+   
 4. Rebooting
 
 To verify if the the patch is active execute `dmesg | grep 'Intel-IOMMU'` after reboot. You should see a result similar

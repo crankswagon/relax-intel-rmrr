@@ -1,5 +1,5 @@
---- a/Makefile
-+++ b/Makefile
+--- a/Makefile 2021-09-28 18:06:28.029963183 +1000
++++ b/Makefile  2021-09-28 18:07:49.617246668 +1000
 @@ -11,7 +11,7 @@
  KERNEL_MAJMIN=$(KERNEL_MAJ).$(KERNEL_MIN)
  KERNEL_VER=$(KERNEL_MAJMIN).$(KERNEL_PATCHLEVEL)
@@ -15,7 +15,9 @@
 
  die "no such directory" if ! -d $dir;
 
--die "strange directory name: $dir" if $dir !~ m|^(.*/)?(5.\d.\d+\-\d+\-pve)(/+)?$|;
-+#die "strange directory name: $dir" if $dir !~ m|^(.*/)?(5.\d.\d+\-\d+\-pve)(/+)?$|;
+-die "strange directory name: $dir" if $dir !~ m|^(.*/)?(\d+.\d+.\d+\-\d+\-pve)(/+)?$|;
++#die "strange directory name: $dir" if $dir !~ m|^(.*/)?(\d+.\d+.\d+\-\d+\-pve)(/+)?$|;
+
 
  my $apiver = $2;
+ 

@@ -1,1 +1,3 @@
 proxmox-kernel/
+build/proxmox/patches/.DS_Store
+.DS_Store
